@@ -3,7 +3,7 @@ const express = require("express");
 const apiRouter = express.Router();
 
 // Import the database adapter functions from the db
-const { getOpenReports, createReport } = require("../db");
+const { getOpenReports, createReport, closeReport, createReportComment } = require("../db");
 
 /**
  * Set up a GET request for /reports
@@ -16,7 +16,7 @@ const { getOpenReports, createReport } = require("../db");
 apiRouter.get("/reports", async (req, res, next) => {
     try {
         const reports = await getOpenReports();
-        res.send( { reports } );
+        res.send({ reports });
         console.log(reports);
     } catch (error) {
         next(error);
@@ -32,8 +32,8 @@ apiRouter.get("/reports", async (req, res, next) => {
  * - on success, it should send back the object returned by createReport
  * - on caught error, call next(error)
  */
- apiRouter.post("/reports", async (req, res, next) => {
-     const { title, location, description, password } = req.body;
+apiRouter.post("/reports", async (req, res, next) => {
+    const { title, location, description, password } = req.body;
     try {
         const report = await createReport({
             title, location, description, password
@@ -54,7 +54,18 @@ apiRouter.get("/reports", async (req, res, next) => {
  * - on success, it should send back the object returned by closeReport
  * - on caught error, call next(error)
  */
-
+apiRouter.delete("/reports/:reportId", async (req, res, next) => {
+    const { password } = req.body; // deconstructing it here makes it a str
+    try {
+        // we dont deconstruct password when we pass it 
+        // in closeReport bc we are just targetting and we use it on other
+        // files as a str to compare it
+        const report = await closeReport(req.params.reportId, password);
+        res.send(report);
+    } catch (error) {
+        next(error);
+    }
+});
 
 
 /**
@@ -66,6 +77,17 @@ apiRouter.get("/reports", async (req, res, next) => {
  * - on success, it should send back the object returned by createReportComment
  * - on caught error, call next(error)
  */
+apiRouter.post("/reports/:reportId/comments", async (req, res, next) => {
+    const { content } = req.body; // deconstructing it here makes it a str
+    try {
+         // we deconstruct content when we pass it in 
+         // createReportComment bc we want to send back an object
+        const comment = await createReportComment(req.params.reportId, {content});
+        res.send(comment);
+    } catch (error) {
+        next(error);
+    }
+});
 
 
 
