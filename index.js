@@ -45,4 +45,5 @@ app.use((error, req, res, next) => {
 // On success, connect to the database
 app.listen(PORT, () => {
     console.log(`listening on ${PORT}`);
+    client.connect();
 })

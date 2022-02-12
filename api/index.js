@@ -3,7 +3,7 @@ const express = require("express");
 const apiRouter = express.Router();
 
 // Import the database adapter functions from the db
-
+const { getOpenReports, createReport } = require("../db");
 
 /**
  * Set up a GET request for /reports
@@ -13,7 +13,15 @@ const apiRouter = express.Router();
  * - on success, it should send back an object like { reports: theReports }
  * - on caught error, call next(error)
  */
-
+apiRouter.get("/reports", async (req, res, next) => {
+    try {
+        const reports = await getOpenReports();
+        res.send( { reports } );
+        console.log(reports);
+    } catch (error) {
+        next(error);
+    }
+});
 
 
 /**
@@ -24,7 +32,17 @@ const apiRouter = express.Router();
  * - on success, it should send back the object returned by createReport
  * - on caught error, call next(error)
  */
-
+ apiRouter.post("/reports", async (req, res, next) => {
+     const { title, location, description, password } = req.body;
+    try {
+        const report = await createReport({
+            title, location, description, password
+        });
+        res.send(report);
+    } catch (error) {
+        next(error);
+    }
+});
 
 
 /**
